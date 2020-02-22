@@ -5,4 +5,10 @@
 }
 
 <h2>Main page for data distillation</h2>
-<vc:distillation-configuration></vc:distillation-configuration>
+<vc:distill-file-input></vc:distill-file-input>
+<vc:distill-page-from-uri></vc:distill-page-from-uri>
+<vc:distill-raw-text></vc:distill-raw-text>
+@if (Model.ShowOutput)
+{
+    <vc:data-output></vc:data-output>
+}

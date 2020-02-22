@@ -11,7 +11,7 @@ namespace RDFDataExtractor.Pages
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
-
+        public bool ShowOutput { get; private set; }
         public IndexModel(ILogger<IndexModel> logger)
         {
             _logger = logger;
@@ -20,6 +20,11 @@ namespace RDFDataExtractor.Pages
         public void OnGet()
         {
 
+        }
+        public void OnPostForDistillation(string file_for_distillation, string page_uri, string raw_input, string rdfa, 
+            string microdata, string turtle, string json_ld, string format)
+        {
+            ShowOutput = true;
         }
     }
 }

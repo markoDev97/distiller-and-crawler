@@ -3,4 +3,28 @@
 *@
 @{
 }
-<p>Here we are!</p>
+<div class="form-group">
+    <div>
+        <label>Semantic data source format:</label>
+    </div>
+    <div>
+        <label>JSON-LD</label>
+        <input type="checkbox" name="json_ld" />
+        <label>Microdata</label>
+        <input type="checkbox" name="microdata" />
+        <label>RDFa</label>
+        <input type="checkbox" name="rdfa" />
+        <label>Turtle</label>
+        <input type="checkbox" name="turtle" />
+    </div>
+    <div>
+        <label>Output format:</label>
+        <select name="format">
+            <option value="json-ld">JSON-LD</option>
+            <option value="n triples">N Triples</option>
+            <option value="rdf/xml">RDF/XML</option>
+            <option value="turtle">Turtle</option>
+        </select>
+    </div>
+</div>
+<button type="submit" class="btn btn-info">Distill data</button>
