@@ -12,6 +12,7 @@ namespace RDFDataExtractor.Pages
     {
         private readonly ILogger<IndexModel> _logger;
         public bool ShowOutput { get; private set; }
+        public string WhichApproach { get;  private set; }
         public IndexModel(ILogger<IndexModel> logger)
         {
             _logger = logger;
@@ -21,8 +22,12 @@ namespace RDFDataExtractor.Pages
         {
 
         }
-        public void OnPostForDistillation(string file_for_distillation, string page_uri, string raw_input, string rdfa, 
-            string microdata, string turtle, string json_ld, string format)
+        public void OnPostWhichApproach(string whichApproach)
+        {
+            WhichApproach = whichApproach;
+        }
+        public void OnPostForDistillation(string fileForDistillation, string pageUri, string rawInput, string rdfa, 
+            string microdata, string turtle, string jsonLd, string format)
         {
             ShowOutput = true;
         }

@@ -1,0 +1,18 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<div>
+    <div>
+        <h2>Choose distillation approach</h2>
+        <form asp-page="Index" asp-page-handler="WhichApproach">
+            <select name="whichApproach">
+                <option value="DistillFileInput">File</option>
+                <option value="DistillPageFromURI">URI</option>
+                <option value="DistillRawText">Raw input</option>
+            </select>
+            <button type="submit" class="btn btn-info">How would to like to distill RDF data?</button>
+        </form>
+    </div>
+</div>
