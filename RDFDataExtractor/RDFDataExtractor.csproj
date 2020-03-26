@@ -11,6 +11,11 @@
     <None Remove="Models\Folder\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="dotNetRDF" Version="2.4.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.23" />
+  </ItemGroup>
+
 
 
 </Project>

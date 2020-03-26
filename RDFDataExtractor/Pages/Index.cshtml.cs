@@ -52,16 +52,25 @@ namespace RDFDataExtractor.Pages
         }
         public void OnPostRawText(string rawInput, string rdfa, string microdata, string turtle, string jsonLd, string format)
         {
+            var inputFormats = InputFormats(rdfa, microdata, turtle, jsonLd);
             ShowOutput = true;
         }
-        private ISet<string> WantedFormats(string rdfa, string microdata, string turtle, string jsonLd)
+        private List<string> InputFormats(string rdfa, string microdata, string turtle, string jsonLd)
         {
-            var res = new HashSet<string>();
+            var res = new List<string>();
+            FillFormatList(ref res, rdfa, microdata, turtle, jsonLd);
             return res;
         }
-        private void AddIfOn(ref ISet<string> set, string format)
+        private void FillFormatList(ref List<string> list, string rdfa, string microdata, string turtle, string jsonLd)
         {
-            if (format == "on")
+            AddIfOn(ref list, "rdfa", rdfa);
+            AddIfOn(ref list, "microdata", microdata);
+            AddIfOn(ref list, "turtle", turtle);
+            AddIfOn(ref list, "jsonLd", jsonLd);
+        }
+        private void AddIfOn(ref List<string> set, string format, string value)
+        {
+            if (value == "on")
                 set.Add(format);
         }
     }
