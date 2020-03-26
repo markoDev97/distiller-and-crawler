@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -26,8 +27,16 @@ namespace RDFDataExtractor.Pages
         {
             WhichApproach = whichApproach;
         }
-        public void OnPostForDistillation(string fileForDistillation, string pageUri, string rawInput, string rdfa, 
+        public void OnPostFile(IFormFile fileForDistillation, string pageUri, string rawInput, string rdfa,
             string microdata, string turtle, string jsonLd, string format)
+        {
+            ShowOutput = true;
+        }
+        public void OnPostURI(string pageUri, string rdfa, string microdata, string turtle, string jsonLd, string format)
+        {
+            ShowOutput = true;
+        }
+        public void OnPostRawText(string pageUri, string rdfa, string microdata, string turtle, string jsonLd, string format)
         {
             ShowOutput = true;
         }

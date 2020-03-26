@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
+using Microsoft.AspNetCore.Http;
+using System.Text;
 
 namespace RDFDataExtractor.Models.Services
 {
@@ -13,7 +15,14 @@ namespace RDFDataExtractor.Models.Services
         {
             var request = (HttpWebRequest)WebRequest.Create(uri);
             var response = (HttpWebResponse)request.GetResponse();
-            var streamReader = 
+            using var streamReader = new StreamReader(response.GetResponseStream());
+            return streamReader.ReadToEnd();
+        }
+        public string ExtractTextFromFile(IFormFile file)
+        {
+            var stream = new MemoryStream();
+            file.CopyTo(stream);
+            return new string(Encoding.ASCII.GetChars(stream.ToArray()));
         }
     }
 }
