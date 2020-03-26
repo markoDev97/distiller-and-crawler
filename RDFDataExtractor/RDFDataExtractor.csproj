@@ -4,6 +4,13 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Models\Folder\**" />
+    <Content Remove="Models\Folder\**" />
+    <EmbeddedResource Remove="Models\Folder\**" />
+    <None Remove="Models\Folder\**" />
+  </ItemGroup>
+
 
 
 </Project>
