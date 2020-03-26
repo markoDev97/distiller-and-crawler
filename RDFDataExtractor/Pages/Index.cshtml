@@ -4,11 +4,15 @@
     ViewData["Title"] = "Home page";
 }
 
-<h2>Main page for data distillation</h2>
+<h1>Main page for data distillation</h1>
 <vc:choose-component></vc:choose-component>
 @if (Model.WhichApproach != null)
 {
     @await Component.InvokeAsync(Model.WhichApproach)
+}
+@if (ViewData["error"] != null)
+{
+<span class="text-danger">@ViewData["error"]</span>
 }
 @if (Model.ShowOutput)
 {

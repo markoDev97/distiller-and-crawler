@@ -3,16 +3,18 @@
 *@
 @{
 }
-<div>
+<div class="component">
     <div>
-        <h2>Choose distillation approach</h2>
+        <h3>Choose distillation approach</h3>
         <form asp-page="Index" asp-page-handler="WhichApproach">
-            <select name="whichApproach">
-                <option value="DistillFileInput">File</option>
-                <option value="DistillPageFromURI">URI</option>
-                <option value="DistillRawText">Raw input</option>
-            </select>
-            <button type="submit" class="btn btn-info">How would to like to distill RDF data?</button>
+            <div>
+                <select name="whichApproach">
+                    <option value="DistillFileInput">File</option>
+                    <option value="DistillPageFromURI">URI</option>
+                    <option value="DistillRawText">Raw input</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-info" style="margin-top: 3px">How would to like to distill RDF data?</button>
         </form>
     </div>
 </div>
