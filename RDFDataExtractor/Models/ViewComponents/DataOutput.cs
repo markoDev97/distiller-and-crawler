@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RDFDataExtractor.Models.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace RDFDataExtractor.Models
 {
     public class DataOutput:ViewComponent
     {
-        public async Task<IViewComponentResult> InvokeAsync()
-            => await Task.FromResult(View());
+        public async Task<IViewComponentResult> InvokeAsync(string data)
+            => await Task.FromResult(View(new ResultViewModel(data)));
     }
 }

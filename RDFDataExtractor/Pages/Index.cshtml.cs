@@ -18,6 +18,7 @@ namespace RDFDataExtractor.Pages
 
         public bool ShowOutput { get; private set; }
         public string WhichApproach { get;  private set; }
+        public string OutputData { get; private set; }
         public IndexModel(ILogger<IndexModel> logger, DistillationService distillationService, TextExtractionService extractionService)
         {
             _logger = logger;
@@ -34,25 +35,32 @@ namespace RDFDataExtractor.Pages
             WhichApproach = whichApproach;
         }
         public void OnPostFile(IFormFile fileForDistillation, string pageUri, string rawInput, string rdfa,
-            string microdata, string turtle, string jsonLd, string format)
+            string microdata, string turtle, string jsonLd, string outputFormat)
         {
             if (fileForDistillation.ContentType == "text/html")
             {
                 var html = _extractionService.ExtractTextFromFile(fileForDistillation);
+                WorkWithMarkup(ref html, rdfa, microdata, turtle, jsonLd, outputFormat);
             }
             else
             {
                 ViewData["error"] = "Only .html files can be uploaded.";
             }
         }
-        public void OnPostURI(string pageUri, string rdfa, string microdata, string turtle, string jsonLd, string format)
+        public void OnPostURI(string pageUri, string rdfa, string microdata, string turtle, string jsonLd, string outputFormat)
         {
             var html = _extractionService.ExtractTextFromURI(pageUri);
-            ShowOutput = true;
+            WorkWithMarkup(ref html, rdfa, microdata, turtle, jsonLd, outputFormat);
         }
-        public void OnPostRawText(string rawInput, string rdfa, string microdata, string turtle, string jsonLd, string format)
+        public void OnPostRawText(string rawInput, string rdfa, string microdata, string turtle, string jsonLd, string outputFormat)
+        {
+            WorkWithMarkup(ref rawInput, rdfa, microdata, turtle, jsonLd, outputFormat);
+        }
+        private void WorkWithMarkup(ref string markup, string rdfa, string microdata, string turtle, 
+            string jsonLd, string outputFormat)
         {
             var inputFormats = InputFormats(rdfa, microdata, turtle, jsonLd);
+            OutputData = _distillationService.DistillDataInFormat(ref markup, inputFormats, outputFormat);
             ShowOutput = true;
         }
         private List<string> InputFormats(string rdfa, string microdata, string turtle, string jsonLd)
