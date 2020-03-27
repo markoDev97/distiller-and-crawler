@@ -28,6 +28,7 @@ namespace RDFDataExtractor
             services.AddSingleton<DistillationService>();
             services.AddSingleton<TextExtractionService>();
             services.AddSingleton<HtmlPiecesExtractionService>();
+            services.AddSingleton<DomainCrawlingService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

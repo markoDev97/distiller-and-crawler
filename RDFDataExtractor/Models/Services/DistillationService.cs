@@ -25,10 +25,6 @@ namespace RDFDataExtractor.Models.Services
                 FillGraph(ref graph, ref html, format);
             return GetFormattedOutput(ref graph, outputFormat);
         }
-        public string CrawlForStructuredData(string URI)//crawler
-        {
-            return "";
-        }
         private string GetFormattedOutput(ref Graph graph, string outputFormat)
         {
             var writer = new System.IO.StringWriter();
@@ -80,7 +76,7 @@ namespace RDFDataExtractor.Models.Services
             {
                 try
                 {
-                    parser.Load(store, new StringReader(piece));
+                    parser.Load(store, new StringReader(piece));//овде за жал допроцесирање на парчето json
                 }
                 catch (Exception)
                 {
