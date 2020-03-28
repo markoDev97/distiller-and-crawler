@@ -32,7 +32,7 @@ namespace RDFDataExtractor.Models.Services
             }
             return writer.ToString();
         }
-        public string GetValidJsonLdObject(string startString)
+        public string GetRecognizableJsonLdObject(string startString)
         {
             var startObject = JObject.Parse(startString);
             var context = GetContext(startObject);

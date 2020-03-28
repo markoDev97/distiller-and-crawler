@@ -76,7 +76,7 @@ namespace RDFDataExtractor.Models.Services
                 {
                     try
                     {
-                        parser.Load(store, new StringReader(_utilityService.GetValidJsonLdObject(piece)));//овде за жал допроцесирање на парчето json
+                        parser.Load(store, new StringReader(_utilityService.GetRecognizableJsonLdObject(piece)));//овде за жал допроцесирање на парчето json
                     }
                     catch (Exception)
                     {
