@@ -12,16 +12,13 @@ namespace RDFDataExtractor.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
         private readonly DistillationService _distillationService;
         private readonly TextExtractionService _extractionService;
-
         public bool ShowOutput { get; private set; }
         public string WhichApproach { get;  private set; }
         public string OutputData { get; private set; }
-        public IndexModel(ILogger<IndexModel> logger, DistillationService distillationService, TextExtractionService extractionService)
+        public IndexModel(DistillationService distillationService, TextExtractionService extractionService)
         {
-            _logger = logger;
             _distillationService = distillationService;
             _extractionService = extractionService;
         }

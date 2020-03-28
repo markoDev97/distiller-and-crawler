@@ -13,10 +13,17 @@ namespace RDFDataExtractor.Models.Services
     {
         public string ExtractTextFromURI(string uri)
         {
-            var request = (HttpWebRequest)WebRequest.Create(uri);
-            var response = (HttpWebResponse)request.GetResponse();
-            using var streamReader = new StreamReader(response.GetResponseStream());
-            return streamReader.ReadToEnd();
+            try
+            {
+                var request = (HttpWebRequest)WebRequest.Create(uri);
+                var response = (HttpWebResponse)request.GetResponse();
+                using var streamReader = new StreamReader(response.GetResponseStream());
+                return streamReader.ReadToEnd();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
         public string ExtractTextFromFile(IFormFile file)
         {

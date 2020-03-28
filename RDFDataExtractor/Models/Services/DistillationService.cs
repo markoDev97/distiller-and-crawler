@@ -13,38 +13,29 @@ namespace RDFDataExtractor.Models.Services
     public class DistillationService
     {
         private readonly HtmlPiecesExtractionService _htmlPiecesExtractionService;
+        private readonly UtilityService _utilityService;
 
-        public DistillationService(HtmlPiecesExtractionService htmlPiecesExtractionService)
+        public DistillationService(HtmlPiecesExtractionService htmlPiecesExtractionService, UtilityService utilityService)
         {
             _htmlPiecesExtractionService = htmlPiecesExtractionService;
+            _utilityService = utilityService;
         }
-        public string DistillDataInFormat(ref string html, List<string> inputFormats, string outputFormat)
-        {//приватни методи за соодветно дестилирање
+        public void DistillData(ref string html, ref Graph graph, List<string> inputFormats)
+        {
+            foreach (var format in inputFormats)
+                FillGraph(ref graph, ref html, format);
+        }
+        public Graph DistillData(ref string html, List<string> inputFormats)
+        {
             var graph = new Graph();
             foreach (var format in inputFormats)
                 FillGraph(ref graph, ref html, format);
-            return GetFormattedOutput(ref graph, outputFormat);
+            return graph;
         }
-        private string GetFormattedOutput(ref Graph graph, string outputFormat)
-        {
-            var writer = new System.IO.StringWriter();
-            if (outputFormat == "jsonLd")
-            {
-                var jsonLdWriter = new JsonLdWriter();
-                var store = new TripleStore();
-                store.Add(graph);
-                jsonLdWriter.Save(store, writer);
-            }
-            else
-            {
-                dynamic formattedWriter = new CompressingTurtleWriter();
-                if (outputFormat == "rdf/xml")
-                    formattedWriter = new RdfXmlWriter();
-                else if (outputFormat == "n triples")
-                    formattedWriter = new NTriplesWriter();
-                formattedWriter.Save(graph, writer);
-            }
-            return writer.ToString();
+        public string DistillDataInFormat(ref string html, List<string> inputFormats, string outputFormat)
+        {//приватни методи за соодветно дестилирање
+            var graph = DistillData(ref html, inputFormats);
+            return _utilityService.GetFormattedOutput(ref graph, outputFormat);
         }
         private void FillGraph(ref Graph graph, ref string html, string inputFormat)
         {
@@ -60,7 +51,14 @@ namespace RDFDataExtractor.Models.Services
         //кај extract методите додај механизми за вадење на делови од интерес по потреба
         private void ExtractRDFaStructuredData(ref string html, ref Graph graph)
         {
-            graph.LoadFromString(html, new RdfAParser());
+            try
+            {
+                graph.LoadFromString(html, new RdfAParser());
+            }
+            catch (Exception)
+            {
+
+            }
         }
         private void ExtractMicrodataStructuredData(ref string html, ref Graph graph)
         {
@@ -71,24 +69,38 @@ namespace RDFDataExtractor.Models.Services
             var parser = new JsonLdParser();
             var store = new TripleStore();
             store.Add(graph);
-            var jsonPieces = _htmlPiecesExtractionService.GetJsonLdNodes(ref html);
-            foreach(var piece in jsonPieces)
+            try
             {
-                try
+                var jsonPieces = _htmlPiecesExtractionService.GetJsonLdSections(ref html);
+                foreach (var piece in jsonPieces)
                 {
-                    parser.Load(store, new StringReader(piece));//овде за жал допроцесирање на парчето json
-                }
-                catch (Exception)
-                {
+                    try
+                    {
+                        parser.Load(store, new StringReader(_utilityService.GetValidJsonLdObject(piece)));//овде за жал допроцесирање на парчето json
+                    }
+                    catch (Exception)
+                    {
 
+                    }
                 }
+            }
+            catch (Exception)
+            {
+
             }
         }
         private void ExtractTurtleStructuredData(ref string html, ref Graph graph)
         {
-            var turtlePieces = _htmlPiecesExtractionService.GetTurtleNodes(ref html);
-            foreach(var piece in turtlePieces)
-                graph.LoadFromString(piece, new TurtleParser());
+            var turtlePieces = _htmlPiecesExtractionService.GetTurtleSections(ref html);
+            try
+            {
+                foreach (var piece in turtlePieces)
+                    graph.LoadFromString(piece, new TurtleParser());
+            }
+            catch (Exception)
+            {
+
+            }
         }
     }
 }

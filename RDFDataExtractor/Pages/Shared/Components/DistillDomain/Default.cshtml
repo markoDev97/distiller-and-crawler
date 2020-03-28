@@ -1,10 +1,20 @@
 ﻿<div class="component">
     <div class="col-md-6">
-        <form asp-page="WebCrawler" asp-page-handler="URI">
+        <form asp-page="WebCrawler" method="post">
             <div class="form-group">
                 <label>Enter domain URI: </label>
-                <input type="text" name="pageUri" />
+                <input type="text" name="uri" />
             </div>
+            <div class="form-group">
+                <label>Output format:</label>
+                <select name="outputFormat">
+                    <option value="jsonLd">JSON-LD</option>
+                    <option value="n triples">N Triples</option>
+                    <option value="rdf/xml">RDF/XML</option>
+                    <option value="turtle">Turtle</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-info">Begin distillation</button>
         </form>
     </div>
 </div>

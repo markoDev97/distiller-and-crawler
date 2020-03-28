@@ -5,6 +5,8 @@
 }
 
 <h1>Distill data from a domain</h1>
-<div>
-    <vc:distill-domain></vc:distill-domain>
-</div>
+<vc:distill-domain></vc:distill-domain>
+@if (Model.ShowOutput)
+{
+    <vc:data-output data="@Model.OutputData"></vc:data-output>
+}
