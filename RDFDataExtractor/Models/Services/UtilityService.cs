@@ -52,50 +52,9 @@ namespace RDFDataExtractor.Models.Services
                 var valuesForRestore = new List<JToken>();
                 var arraysForRestore = new List<string>();
                 var arrayValuesForRestore = new List<List<JToken>>();
-                var properties = jObject.Properties();
-                foreach (var child in properties)
-                {
-                    if (child.Value.Type == JTokenType.Object)
-                    {
-                        namesForRepair.Add(child.Name);
-                        var obj = JObject.Parse(child.Value.ToString());
-                        valuesForRestore.Add(HandleJsonLdObject(ref obj, ref visited, context));
-                    }
-                    else if (child.Value.Type == JTokenType.Array)
-                    {
-                        var objectArray = child.Value;
-                        var newTokens = new List<JToken>();
-                        var children = new List<JToken>(objectArray.Children());
-                        for (var i = 0; i < children.Count; i++)
-                        {
-                            try
-                            {
-                                var subchild = JObject.Parse(children[i].ToString());
-                                newTokens.Add(HandleJsonLdObject(ref subchild, ref visited, context));
-                            }
-                            catch (Exception)
-                            {
-                                newTokens.Add("\"" + children[i].ToString() + "\"");
-                            }
-                        }
-                        arraysForRestore.Add(child.Name);
-                        arrayValuesForRestore.Add(newTokens);
-                    }
-                }
-                for (var i = 0; i < namesForRepair.Count; i++)
-                {
-                    var name = namesForRepair[i];
-                    jObject.Remove(name);
-                    jObject.Add(name, valuesForRestore[i]);
-                }
-                for (var i = 0; i < arraysForRestore.Count; i++)
-                {
-                    var name = arraysForRestore[i];
-                    var valueForRestore = arrayValuesForRestore[i];
-                    jObject.Remove(name);
-                    var arrayString = JsonLdArrayString(valueForRestore);
-                    jObject.Add(name, JArray.Parse(arrayString));
-                }
+                PrepareForChange(ref jObject, ref visited, ref namesForRepair, ref valuesForRestore, ref arraysForRestore,
+                    ref arrayValuesForRestore, context);
+                AssembleObject(ref jObject, ref namesForRepair, ref valuesForRestore, ref arraysForRestore, ref arrayValuesForRestore);
             }
             return jObject;
         }
@@ -134,6 +93,59 @@ namespace RDFDataExtractor.Models.Services
                     jObject.Remove(name);
                     jObject.Add(name, new Uri(context, value).ToString());
                 }
+            }
+        }
+        private void PrepareForChange(ref JObject jObject, ref HashSet<string> visited, ref List<string> namesForRepair, 
+            ref List<JToken> valuesForRestore, ref List<string> arraysForRestore, ref List<List<JToken>> arrayValuesForRestore,
+            Uri context)
+        {
+            var properties = jObject.Properties();
+            foreach (var child in properties)
+            {
+                if (child.Value.Type == JTokenType.Object)
+                {
+                    namesForRepair.Add(child.Name);
+                    var obj = JObject.Parse(child.Value.ToString());
+                    valuesForRestore.Add(HandleJsonLdObject(ref obj, ref visited, context));
+                }
+                else if (child.Value.Type == JTokenType.Array)
+                {
+                    var objectArray = child.Value;
+                    var newTokens = new List<JToken>();
+                    var children = new List<JToken>(objectArray.Children());
+                    for (var i = 0; i < children.Count; i++)
+                    {
+                        try
+                        {
+                            var subchild = JObject.Parse(children[i].ToString());
+                            newTokens.Add(HandleJsonLdObject(ref subchild, ref visited, context));
+                        }
+                        catch (Exception)
+                        {
+                            newTokens.Add("\"" + children[i].ToString() + "\"");
+                        }
+                    }
+                    arraysForRestore.Add(child.Name);
+                    arrayValuesForRestore.Add(newTokens);
+                }
+            }
+        }
+        private void AssembleObject(ref JObject jObject, ref List<string> namesForRepair, ref List<JToken> valuesForRestore, 
+            ref List<string> arraysForRestore, ref List<List<JToken>> arrayValuesForRestore)
+        {
+            for (var i = 0; i < namesForRepair.Count; i++)
+            {
+                var name = namesForRepair[i];
+                jObject.Remove(name);
+                jObject.Add(name, valuesForRestore[i]);
+            }
+            for (var i = 0; i < arraysForRestore.Count; i++)
+            {
+                var name = arraysForRestore[i];
+                var valueForRestore = arrayValuesForRestore[i];
+                jObject.Remove(name);
+                var arrayString = JsonLdArrayString(valueForRestore);
+                jObject.Add(name, JArray.Parse(arrayString));
             }
         }
         private string JsonLdArrayString(List<JToken> tokens)
