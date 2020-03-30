@@ -30,24 +30,34 @@ namespace RDFDataExtractor.Models.Services
         {
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-            return new List<HtmlNode>(htmlDocument.DocumentNode.Descendants().Where(node => IsItemscope(node)));
+            var result = new List<HtmlNode>(htmlDocument.DocumentNode.Descendants().Where(node => IsItemscope(node)));
+            var i = 0;
+            foreach(var node in result)
+            {
+                if (!HasAttribute(node, "itemid"))
+                {
+                    node.SetAttributeValue("itemid", $"node{i++}");
+                }
+            }
+            return result;
         }
         public List<HtmlNode> FindPredicateObjectDescendantNodes(HtmlNode node)
         {
             var result = new List<HtmlNode>();
-            ProcessPredicateObjectNode(node, ref result);
+            foreach(var child in node.ChildNodes)
+                ProcessPredicateObjectNode(child, ref result);
             return result;
         }
         private void ProcessPredicateObjectNode(HtmlNode node, ref List<HtmlNode> rdfNodes)
         {
-            rdfNodes.Add(node);
+            if (HasAttribute(node, "itemprop"))
+                rdfNodes.Add(node);
             if (!IsItemscope(node))
             {
-                var descendants = node.Descendants();
-                foreach (var descendant in descendants)
+                var children = node.ChildNodes;
+                foreach (var child in children)
                 {
-                    if (HasAttribute(descendant, "itemprop")||HasAttribute(descendant, "itemscope"))
-                        ProcessPredicateObjectNode(descendant, ref rdfNodes);
+                    ProcessPredicateObjectNode(child, ref rdfNodes);
                 }
             }
         }

@@ -57,17 +57,39 @@ namespace RDFDataExtractor.Models.Services
                 var itemscope = allItemscopes[i];
                 var descendants = _piecesExtractionService.FindPredicateObjectDescendantNodes(itemscope);
                 var subject = allSubjects[i];
-                ExtractMicrodataTriples(subject, ref descendants, ref triples);
+                if (HasAttribute(itemscope, "itemtype"))
+                {
+                    var nodeFactory = new NodeFactory();
+                    triples.Add(new Triple(GetAppropriateIdNode(itemscope), nodeFactory.CreateUriNode(new Uri(GetTypeString())), 
+                        nodeFactory.CreateUriNode(new Uri(itemscope.Attributes["itemtype"].Value))));
+                }
+                ExtractMicrodataTriples(triples.First().Subject, ref descendants, ref triples);
             }
             return SerializeTripleList(triples);
         }
-        private void ExtractMicrodataTriples(INode subject, ref List<HtmlNode> predicateObjectDescendants,
+        private INode GetAppropriateIdNode(HtmlNode itemscope)
+        {
+            //var value = itemscope.Attributes["itemid"].Value;
+            var nodeFactory = new NodeFactory();
+            return nodeFactory
+                 .CreateBlankNode(itemscope.Attributes["itemid"].Value);
+            //return Uri.IsWellFormedUriString(itemscope.Attributes["itemid"].Value, UriKind.Absolute) ? (INode)nodeFactory
+              //  .CreateUriNode(new Uri(value)) : nodeFactory.CreateLiteralNode(value);
+        }
+        private void ExtractMicrodataTriples(INode currentSubject, ref List<HtmlNode> predicateObjectDescendants,
             ref List<Triple> triples)//вадење на тројки од еден точно определен itemscope
         {
-            var nodeFactory = new NodeFactory();  
-            foreach (var descendant in predicateObjectDescendants)
+            for (var i= 0; i < predicateObjectDescendants.Count; i++)
             {
+                var predicateAndObject = GetPredicateAndObjectNode(predicateObjectDescendants[i]);
+                try
+                {
+                    triples.Add(new Triple(currentSubject, predicateAndObject.Item1, predicateAndObject.Item2));
+                }
+                catch (Exception)
+                {
 
+                }
             }
         }
         private List<INode> GetSubjectNodes(List<HtmlNode> itemscopes)
@@ -76,32 +98,67 @@ namespace RDFDataExtractor.Models.Services
             var nodeFactory = new NodeFactory();
             foreach(var itemscope in itemscopes)
             {
-                if (HasAttribute(itemscope, "itemid"))
-                    result.Add(nodeFactory.CreateUriNode(new Uri(itemscope.GetAttributeValue("itemid", null))));
-                else
-                    result.Add(nodeFactory.CreateBlankNode());
+                result.Add(nodeFactory.CreateUriNode(new Uri(new Uri("http://schema.org"), itemscope.Attributes["itemid"].Value)));
             }
             return result;
         }
+        private string GetTypeString()
+            => "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
         private IBlankNode GetNewSubjectNode()
             => new NodeFactory().CreateBlankNode();
-        private INode GetPredicateNode(HtmlNode htmlNode)
+        private Tuple<INode, INode> GetPredicateAndObjectNode(HtmlNode htmlNode)
         {
-            return null;
+            var nodeFactory = new NodeFactory();
+            try
+            {
+                var item1 = nodeFactory.CreateUriNode(new Uri(new Uri("http://schema.org"), htmlNode.GetAttributeValue("itemprop", null)));
+                var item2 = GetObjectNode(htmlNode);
+                return new Tuple<INode, INode>(item1, item2);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+        private INode GetObjectNode(HtmlNode htmlNode)
+        {
+            var nodeFactory = new NodeFactory();
+            if (HasAttribute(htmlNode, "datetime"))
+                return nodeFactory.CreateLiteralNode(htmlNode.Attributes["datetime"].Value);
+            else if (htmlNode.OriginalName == "a")
+                return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["href"].Value));
+            else if (htmlNode.OriginalName == "img")
+                return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["src"].Value));
+            else if (htmlNode.Attributes["itemscope"] != null)
+            {
+                return nodeFactory.CreateBlankNode(htmlNode.Attributes["itemid"].Value);
+            }
+            else
+                return nodeFactory.CreateLiteralNode(htmlNode.InnerText);
         }
         private string SerializeTripleList(List<Triple> triples)
         {
             var strings = new List<string>();
             foreach(var triple in triples)
             {
-                strings.Append(GetFormattedNTripleOutput(triple));
+                strings.Add(GetFormattedNTripleOutput(triple));
             }
-            return new StringBuilder().AppendJoin("\n", strings).ToString();
+            return new StringBuilder().AppendJoin(".\n", strings).ToString()+".";
         }
         private string GetFormattedNTripleOutput(Triple triple)
         {
-            var result = triple.Subject.ToString() + " " + triple.Predicate.ToString() + " " + triple.Object.ToString() + ".";
-            return result;
+            var literal = triple.Object.NodeType == NodeType.Literal;
+            return GetNTriplesComponentOutput(triple.Subject.ToString()) + " " + GetNTriplesComponentOutput
+                (triple.Predicate.ToString()) + " " + GetNTriplesComponentOutput(triple.Object.ToString(), literal);
+        }
+        private string GetNTriplesComponentOutput(string component, bool literal=false)
+        {
+            if (component.Contains("http") && component.Contains("://"))
+                return $"<{component}>";
+            else if (!literal)
+                return component;
+            else
+                return $"\"{component}\"";
         }
         private bool HasAttribute(HtmlNode node, string attributeName)
             => node.GetAttributeValue(attributeName, null) != null;

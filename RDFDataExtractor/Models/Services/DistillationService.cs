@@ -61,9 +61,16 @@ namespace RDFDataExtractor.Models.Services
         }
         private void ExtractMicrodataStructuredData(ref string html, ref Graph graph)
         {
-            //сервис за вадење на microdata тројки
-            var data = _utilityService.GetMicrodataStructuredData(html);
-            graph.LoadFromString(data, new NTriplesParser());
+            try
+            {
+                var data = _utilityService.GetMicrodataStructuredData(html);
+                File.WriteAllText("output.txt", data);
+                graph.LoadFromString(data, new NTriplesParser());
+            }
+            catch (Exception)
+            {
+
+            }
         }
         private void ExtractJsonLdStructuredData(ref string html, ref Graph graph)
         {
