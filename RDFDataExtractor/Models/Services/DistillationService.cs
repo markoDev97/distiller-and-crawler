@@ -48,7 +48,6 @@ namespace RDFDataExtractor.Models.Services
             else if (inputFormat == "turtle")
                 ExtractTurtleStructuredData(ref html, ref graph);
         }
-        //кај extract методите додај механизми за вадење на делови од интерес по потреба
         private void ExtractRDFaStructuredData(ref string html, ref Graph graph)
         {
             try
@@ -62,7 +61,9 @@ namespace RDFDataExtractor.Models.Services
         }
         private void ExtractMicrodataStructuredData(ref string html, ref Graph graph)
         {
-            
+            //сервис за вадење на microdata тројки
+            var data = _utilityService.GetMicrodataStructuredData(html);
+            graph.LoadFromString(data, new NTriplesParser());
         }
         private void ExtractJsonLdStructuredData(ref string html, ref Graph graph)
         {

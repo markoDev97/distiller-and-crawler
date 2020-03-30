@@ -6,11 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 using VDS.RDF;
 using VDS.RDF.Writing;
+using HtmlAgilityPack;
 
 namespace RDFDataExtractor.Models.Services
 {
     public class UtilityService
     {
+        private readonly HtmlPiecesExtractionService _piecesExtractionService;
+        public UtilityService(HtmlPiecesExtractionService piecesExtractionService)
+        {
+            _piecesExtractionService = piecesExtractionService;
+        }
         public string GetFormattedOutput(ref Graph graph, string outputFormat)
         {
             var writer = new System.IO.StringWriter();
@@ -41,6 +47,64 @@ namespace RDFDataExtractor.Models.Services
             HandleJsonLdObject(ref startObject, ref visited, context);
             return startObject.ToString();
         }
+        public string GetMicrodataStructuredData(string html)
+        {
+            var allItemscopes = _piecesExtractionService.GetItemscopeNodes(html);
+            var allSubjects = GetSubjectNodes(allItemscopes);
+            var triples = new List<Triple>();
+            for (var i = 0; i < allItemscopes.Count; i++)
+            {
+                var itemscope = allItemscopes[i];
+                var descendants = _piecesExtractionService.FindPredicateObjectDescendantNodes(itemscope);
+                var subject = allSubjects[i];
+                ExtractMicrodataTriples(subject, ref descendants, ref triples);
+            }
+            return SerializeTripleList(triples);
+        }
+        private void ExtractMicrodataTriples(INode subject, ref List<HtmlNode> predicateObjectDescendants,
+            ref List<Triple> triples)//вадење на тројки од еден точно определен itemscope
+        {
+            var nodeFactory = new NodeFactory();  
+            foreach (var descendant in predicateObjectDescendants)
+            {
+
+            }
+        }
+        private List<INode> GetSubjectNodes(List<HtmlNode> itemscopes)
+        {
+            var result = new List<INode>();
+            var nodeFactory = new NodeFactory();
+            foreach(var itemscope in itemscopes)
+            {
+                if (HasAttribute(itemscope, "itemid"))
+                    result.Add(nodeFactory.CreateUriNode(new Uri(itemscope.GetAttributeValue("itemid", null))));
+                else
+                    result.Add(nodeFactory.CreateBlankNode());
+            }
+            return result;
+        }
+        private IBlankNode GetNewSubjectNode()
+            => new NodeFactory().CreateBlankNode();
+        private INode GetPredicateNode(HtmlNode htmlNode)
+        {
+            return null;
+        }
+        private string SerializeTripleList(List<Triple> triples)
+        {
+            var strings = new List<string>();
+            foreach(var triple in triples)
+            {
+                strings.Append(GetFormattedNTripleOutput(triple));
+            }
+            return new StringBuilder().AppendJoin("\n", strings).ToString();
+        }
+        private string GetFormattedNTripleOutput(Triple triple)
+        {
+            var result = triple.Subject.ToString() + " " + triple.Predicate.ToString() + " " + triple.Object.ToString() + ".";
+            return result;
+        }
+        private bool HasAttribute(HtmlNode node, string attributeName)
+            => node.GetAttributeValue(attributeName, null) != null;
         private JToken HandleJsonLdObject(ref JObject jObject, ref HashSet<string> visited, Uri context)
         {//refactor
             if (!visited.Contains(jObject.ToString()))
