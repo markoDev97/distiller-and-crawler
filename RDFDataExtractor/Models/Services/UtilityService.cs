@@ -56,7 +56,6 @@ namespace RDFDataExtractor.Models.Services
             {
                 var itemscope = allItemscopes[i];
                 var descendants = _piecesExtractionService.FindPredicateObjectDescendantNodes(itemscope);
-                var subject = allSubjects[i];
                 if (HasAttribute(itemscope, "itemtype"))
                 {
                     var nodeFactory = new NodeFactory();
@@ -69,12 +68,9 @@ namespace RDFDataExtractor.Models.Services
         }
         private INode GetAppropriateIdNode(HtmlNode itemscope)
         {
-            //var value = itemscope.Attributes["itemid"].Value;
             var nodeFactory = new NodeFactory();
             return nodeFactory
                  .CreateBlankNode(itemscope.Attributes["itemid"].Value);
-            //return Uri.IsWellFormedUriString(itemscope.Attributes["itemid"].Value, UriKind.Absolute) ? (INode)nodeFactory
-              //  .CreateUriNode(new Uri(value)) : nodeFactory.CreateLiteralNode(value);
         }
         private void ExtractMicrodataTriples(INode currentSubject, ref List<HtmlNode> predicateObjectDescendants,
             ref List<Triple> triples)//вадење на тројки од еден точно определен itemscope
@@ -123,16 +119,18 @@ namespace RDFDataExtractor.Models.Services
         private INode GetObjectNode(HtmlNode htmlNode)
         {
             var nodeFactory = new NodeFactory();
-            if (HasAttribute(htmlNode, "datetime"))
+            if (htmlNode.Attributes["itemscope"] != null)
+            {
+                return nodeFactory.CreateBlankNode(htmlNode.Attributes["itemid"].Value);
+            }
+            else if (HasAttribute(htmlNode, "datetime"))
                 return nodeFactory.CreateLiteralNode(htmlNode.Attributes["datetime"].Value);
             else if (htmlNode.OriginalName == "a")
                 return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["href"].Value));
             else if (htmlNode.OriginalName == "img")
                 return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["src"].Value));
-            else if (htmlNode.Attributes["itemscope"] != null)
-            {
-                return nodeFactory.CreateBlankNode(htmlNode.Attributes["itemid"].Value);
-            }
+            else if (htmlNode.OriginalName == "meta")
+                return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["content"].Value));
             else
                 return nodeFactory.CreateLiteralNode(htmlNode.InnerText);
         }
@@ -163,7 +161,7 @@ namespace RDFDataExtractor.Models.Services
         private bool HasAttribute(HtmlNode node, string attributeName)
             => node.GetAttributeValue(attributeName, null) != null;
         private JToken HandleJsonLdObject(ref JObject jObject, ref HashSet<string> visited, Uri context)
-        {//refactor
+        {
             if (!visited.Contains(jObject.ToString()))
             {
                 visited.Add(jObject.ToString());
@@ -209,7 +207,7 @@ namespace RDFDataExtractor.Models.Services
                 var value = properties[i].Value.ToString();
                 if (!name.Contains("@"))
                     continue;
-                if (!Uri.IsWellFormedUriString(value, UriKind.Absolute))
+                if (!Uri.IsWellFormedUriString(value, UriKind.Absolute)&&properties[i].Value.Type==JTokenType.String)
                 {
                     jObject.Remove(name);
                     jObject.Add(name, new Uri(context, value).ToString());

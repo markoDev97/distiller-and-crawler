@@ -84,11 +84,11 @@ namespace RDFDataExtractor.Models.Services
                 {
                     try
                     {
-                        parser.Load(store, new StringReader(_utilityService.GetRecognizableJsonLdObject(piece)));//овде за жал допроцесирање на парчето json
+                        parser.Load(store, new StringReader(piece));
                     }
                     catch (Exception)
                     {
-
+                        parser.Load(store, new StringReader(_utilityService.GetRecognizableJsonLdObject(piece)));
                     }
                 }
             }

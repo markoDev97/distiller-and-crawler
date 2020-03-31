@@ -25,6 +25,7 @@ namespace RDFDataExtractor.Models.Services
         {
             var graph = new Graph();
             var visited = new HashSet<string>();
+            var host = new Uri(uri).Host;
             GetStructuredDataFromDomain(uri, ref graph, ref visited);
             return _utilityService.GetFormattedOutput(ref graph, outputFormat);
         }
