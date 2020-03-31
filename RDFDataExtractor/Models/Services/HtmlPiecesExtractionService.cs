@@ -13,14 +13,16 @@ namespace RDFDataExtractor.Models.Services
             => GetRDFDataSections(ref html, "text/turtle");
         public List<string> GetJsonLdSections(ref string html)
             => GetRDFDataSections(ref html, "application/ld+json");
-        public List<string> GetHyperlinksFromDomain(ref string html, string domain)
+        public List<string> GetHyperlinksFromDomain(ref string html, HashSet<string> visited, string domain)
         {
             try
             {
                 var document = new HtmlDocument();
                 document.LoadHtml(html);
-                return new List<string>(document.DocumentNode.Descendants("a").Where(node => node.GetAttributeValue("href", "")
-                    .Contains(domain)).Select(node => node.GetAttributeValue("href", "")));
+                return new List<string>(document.DocumentNode.Descendants("a")
+                    .Where(node => node.GetAttributeValue("href", "").Contains(domain)&& 
+                        !visited.Contains(node.GetAttributeValue("href", "")))
+                    .Select(node => node.GetAttributeValue("href", "")));
             }
             catch (Exception)
             {

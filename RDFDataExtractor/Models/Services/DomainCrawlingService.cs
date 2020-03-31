@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using VDS.RDF;
 
@@ -25,11 +26,11 @@ namespace RDFDataExtractor.Models.Services
         {
             var graph = new Graph();
             var visited = new HashSet<string>();
-            var host = new Uri(uri).Host;
-            GetStructuredDataFromDomain(uri, ref graph, ref visited);
+            var baseDomain = _utilityService.GetBaseDomain(uri);
+            GetStructuredDataFromDomain(uri, baseDomain, ref graph, ref visited);
             return _utilityService.GetFormattedOutput(ref graph, outputFormat);
         }
-        private void GetStructuredDataFromDomain(string uri, ref Graph graph, ref HashSet<string> visited)
+        private void GetStructuredDataFromDomain(string uri, string baseDomain, ref Graph graph, ref HashSet<string> visited)
         {
             if (!visited.Contains(uri))
             {
@@ -43,9 +44,9 @@ namespace RDFDataExtractor.Models.Services
                 };
                 _distillationService.DistillData(ref html, ref graph, allFormats);
                 visited.Add(uri);
-                var hyperlinks = _piecesExtractionService.GetHyperlinksFromDomain(ref html, uri);
+                var hyperlinks = _piecesExtractionService.GetHyperlinksFromDomain(ref html, visited, baseDomain);
                 foreach (var link in hyperlinks)
-                    GetStructuredDataFromDomain(uri, ref graph, ref visited);//DFS
+                    GetStructuredDataFromDomain(link, baseDomain, ref graph, ref visited);//DFS
             }
         }
     }

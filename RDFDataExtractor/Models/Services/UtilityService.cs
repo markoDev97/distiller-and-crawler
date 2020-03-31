@@ -50,7 +50,6 @@ namespace RDFDataExtractor.Models.Services
         public string GetMicrodataStructuredData(string html)
         {
             var allItemscopes = _piecesExtractionService.GetItemscopeNodes(html);
-            var allSubjects = GetSubjectNodes(allItemscopes);
             var triples = new List<Triple>();
             for (var i = 0; i < allItemscopes.Count; i++)
             {
@@ -65,6 +64,19 @@ namespace RDFDataExtractor.Models.Services
                 ExtractMicrodataTriples(triples.First().Subject, ref descendants, ref triples);
             }
             return SerializeTripleList(triples);
+        }
+        public string GetBaseDomain(string url)
+        {
+            var domainPiece = url.Split("/")[2];
+            var pieces = domainPiece.Split(".").TakeLast(2);
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendJoin(".", pieces);
+            return stringBuilder.ToString();
+        }
+        public string GetUnicodeString(string data)
+        {
+            var dataBytes = Encoding.ASCII.GetBytes(data);
+            return Encoding.Unicode.GetString(dataBytes);
         }
         private INode GetAppropriateIdNode(HtmlNode itemscope)
         {
@@ -128,7 +140,7 @@ namespace RDFDataExtractor.Models.Services
             else if (htmlNode.OriginalName == "a")
                 return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["href"].Value));
             else if (htmlNode.OriginalName == "img")
-                return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["src"].Value));
+                return nodeFactory.CreateLiteralNode(htmlNode.Attributes["src"].Value);
             else if (htmlNode.OriginalName == "meta")
                 return nodeFactory.CreateUriNode(new Uri(htmlNode.Attributes["content"].Value));
             else
