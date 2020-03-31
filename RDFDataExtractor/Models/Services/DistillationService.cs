@@ -64,7 +64,6 @@ namespace RDFDataExtractor.Models.Services
             try
             {
                 var data = _utilityService.GetMicrodataStructuredData(html);
-                File.WriteAllText("output.txt", data);
                 graph.LoadFromString(data, new NTriplesParser());
             }
             catch (Exception)
